@@ -2,7 +2,7 @@
 
 import pytest
 
-from conftest import PNG, audit_events, create_note, login, post, token, upload
+from conftest import PNG, audit_events, create_note, login, post, upload
 
 
 def test_anonymous_users_are_sent_to_login(client):

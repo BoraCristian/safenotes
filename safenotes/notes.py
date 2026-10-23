@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import os
 import sqlite3
 
@@ -190,10 +191,8 @@ def unshare(note_id: int, user_id: int):
 
 
 def _remove_file(stored_name: str) -> None:
-    try:
+    with contextlib.suppress(FileNotFoundError):
         os.remove(os.path.join(current_app.config["UPLOAD_FOLDER"], stored_name))
-    except FileNotFoundError:
-        pass
 
 
 def _load_attachment(attachment_id: int, *, write: bool = False) -> sqlite3.Row:

@@ -1,6 +1,6 @@
 """Cross-site request forgery: every state-changing request needs the session's token and a same-origin request."""
 
-from conftest import audit_events, create_note, register, token
+from conftest import audit_events, create_note, token
 
 
 def test_post_without_token_is_rejected(app, alice):

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import os
 import re
 from datetime import datetime, timezone
@@ -167,10 +168,8 @@ def delete_account():
     db.execute("DELETE FROM users WHERE id = ?", (g.user["id"],))  # cascades to notes, shares, sessions
     db.commit()
     for name in stored:
-        try:
+        with contextlib.suppress(FileNotFoundError):
             os.remove(os.path.join(current_app.config["UPLOAD_FOLDER"], name))
-        except FileNotFoundError:
-            pass
     logout_user()
     flash("Your account and all its notes have been deleted.", "success")
     return redirect(url_for("auth.login"))
