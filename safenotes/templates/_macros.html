@@ -1,0 +1,4 @@
+{# Every form that changes something includes this hidden field; security.check_csrf() rejects POSTs without it. #}
+{%- macro csrf_field() -%}
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+{%- endmacro -%}

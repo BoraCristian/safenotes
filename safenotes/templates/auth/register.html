@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf_field %}
+{% block title %}Create account{% endblock %}
+{% block content %}
+<section class="card narrow">
+  <h1>Create an account</h1>
+  {% if error %}<div class="flash flash-error" role="alert">{{ error }}</div>{% endif %}
+  <form method="post" action="{{ url_for('auth.register') }}" class="form">
+    {{ csrf_field() }}
+    <label>Username
+      <input name="username" value="{{ username }}" autocomplete="username" required
+             minlength="3" maxlength="32" pattern="[A-Za-z0-9_.\-]{3,32}" autofocus>
+    </label>
+    <label>Password
+      <input name="password" type="password" autocomplete="new-password" required minlength="12" maxlength="128">
+      <span class="hint">At least 12 characters. A few random words work well.</span>
+    </label>
+    <label>Repeat password
+      <input name="confirm" type="password" autocomplete="new-password" required minlength="12" maxlength="128">
+    </label>
+    <button type="submit" class="primary">Create account</button>
+  </form>
+  <p class="muted">Already registered? <a href="{{ url_for('auth.login') }}">Sign in</a></p>
+</section>
+{% endblock %}

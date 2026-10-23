@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Notes{% endblock %}
+{% block content %}
+<div class="page-head">
+  <h1>Your notes</h1>
+  <form method="get" action="{{ url_for('notes.index') }}" class="search" role="search">
+    <label class="sr-only" for="q">Search notes</label>
+    <input id="q" name="q" value="{{ q }}" placeholder="Search notes" maxlength="100">
+    <button type="submit">Search</button>
+  </form>
+</div>
+
+{% if notes %}
+<ul class="note-list">
+  {% for n in notes %}
+  <li>
+    <a href="{{ url_for('notes.view', note_id=n.id) }}" class="note-title">{{ n.title }}</a>
+    <span class="muted small">
+      {% if not n.mine %}<span class="badge">shared by {{ n.owner_name }}</span>{% endif %}
+      updated {{ n.updated_at[:16]|replace('T', ' ') }} UTC
+    </span>
+  </li>
+  {% endfor %}
+</ul>
+{% elif q %}
+<p class="card muted">No notes match “{{ q }}”.</p>
+{% else %}
+<div class="card empty">
+  <p>You don't have any notes yet.</p>
+  <a href="{{ url_for('notes.create') }}" class="button primary">Write your first note</a>
+</div>
+{% endif %}
+{% endblock %}

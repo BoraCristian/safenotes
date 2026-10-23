@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf_field %}
+{% block title %}{{ 'Edit note' if note else 'New note' }}{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>{{ 'Edit note' if note else 'New note' }}</h1>
+  {% if error %}<div class="flash flash-error" role="alert">{{ error }}</div>{% endif %}
+  <form method="post" class="form"
+        action="{{ url_for('notes.edit', note_id=note.id) if note else url_for('notes.create') }}">
+    {{ csrf_field() }}
+    <label>Title
+      <input name="title" value="{{ title }}" required maxlength="200" autofocus>
+    </label>
+    <label>Note
+      <textarea name="body" rows="14" maxlength="20000">{{ body }}</textarea>
+    </label>
+    <div class="actions">
+      <button type="submit" class="primary">Save</button>
+      <a href="{{ url_for('notes.view', note_id=note.id) if note else url_for('notes.index') }}">Cancel</a>
+    </div>
+  </form>
+</section>
+{% endblock %}

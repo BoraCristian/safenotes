@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% from "_macros.html" import csrf_field %}
+{% block title %}Account{% endblock %}
+{% block content %}
+<h1>Account</h1>
+
+<section class="card">
+  <h2>Active sessions</h2>
+  <p class="muted">Every device signed in to your account. Sessions end after 30 minutes of inactivity or 12 hours at most.</p>
+  <table class="table">
+    <thead><tr><th>Device</th><th>IP address</th><th>Signed in</th><th>Last active</th></tr></thead>
+    <tbody>
+    {% for s in sessions %}
+      <tr>
+        <td>{{ s.agent }}{% if s.current %} <span class="badge">this device</span>{% endif %}</td>
+        <td><code>{{ s.ip }}</code></td>
+        <td>{{ s.created }}</td>
+        <td>{{ s.last_seen }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% if sessions|length > 1 %}
+  <form method="post" action="{{ url_for('auth.revoke_sessions') }}">
+    {{ csrf_field() }}
+    <button type="submit">Sign out all other sessions</button>
+  </form>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h2>Change password</h2>
+  <form method="post" action="{{ url_for('auth.change_password') }}" class="form">
+    {{ csrf_field() }}
+    <label>Current password
+      <input name="current_password" type="password" autocomplete="current-password" required>
+    </label>
+    <label>New password
+      <input name="new_password" type="password" autocomplete="new-password" required minlength="12" maxlength="128">
+    </label>
+    <label>Repeat new password
+      <input name="confirm" type="password" autocomplete="new-password" required minlength="12" maxlength="128">
+    </label>
+    <button type="submit" class="primary">Change password</button>
+  </form>
+</section>
+
+<section class="card danger-zone">
+  <h2>Delete account</h2>
+  <p class="muted">Permanently deletes your account, all your notes and their attachments.</p>
+  <form method="post" action="{{ url_for('auth.delete_account') }}" class="form">
+    {{ csrf_field() }}
+    <label>Type DELETE to confirm
+      <input name="confirm" required pattern="DELETE" autocomplete="off">
+    </label>
+    <label>Password
+      <input name="password" type="password" autocomplete="current-password" required>
+    </label>
+    <button type="submit" class="danger">Delete my account</button>
+  </form>
+</section>
+{% endblock %}
