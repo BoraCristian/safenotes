@@ -24,7 +24,7 @@ For production, set `SAFENOTES_ENV=production` and a random `SAFENOTES_SECRET_KE
 
 | Risk | What SafeNotes does | Where | Proved by |
 |---|---|---|---|
-| **A01 Broken access control** | Every note, edit, share and attachment goes through one `load_note()` check. Notes you can't see return **404** (same as non-existent, so ids can't be probed). Read-only shares return 403 on writes. Attachments inherit the note's permissions. Login redirects only go to local paths (no open redirect). | [`notes.py`](safenotes/notes.py), [`security.py`](safenotes/security.py) `safe_next` | [`test_access_control.py`](tests/test_access_control.py) |
+| **A01 Broken access control** | Every note, edit, share and attachment goes through one `load_note()` check. Notes you can't see return **404** (same as non-existent, so ids can't be probed). Read-only shares return 403 on writes. Attachments inherit the note's permissions. No open redirect: after login, the `next` target must match one of the app's own routes and is rebuilt with `url_for()`, an allowlist rather than a blocklist of bad URLs. | [`notes.py`](safenotes/notes.py), [`security.py`](safenotes/security.py) `safe_next` | [`test_access_control.py`](tests/test_access_control.py) |
 | **A02 Cryptographic failures** | Passwords hashed with **scrypt** (memory-hard, unique salt). Session tokens are 256-bit random values, and only their SHA-256 is stored. In production: `Secure` + `__Host-` cookie, HSTS. | [`passwords.py`](safenotes/passwords.py), [`config.py`](safenotes/config.py) | [`test_auth.py`](tests/test_auth.py), [`test_config_and_headers.py`](tests/test_config_and_headers.py) |
 | **A03 Injection** | Every SQL query uses `?` placeholders, with no string-built SQL anywhere. `LIKE` wildcards in search are escaped. Jinja auto-escaping for all output, and notes are shown as text, not HTML. | [`db.py`](safenotes/db.py), [`notes.py`](safenotes/notes.py), templates | [`test_injection.py`](tests/test_injection.py) |
 | **A04 Insecure design** | Uploads: allowlist of types, type decided from the **file's bytes** and must match the extension, random stored names with no extension, kept outside the web root, size and count limits, and always served as a download with `nosniff` and a sandbox CSP. | [`uploads.py`](safenotes/uploads.py) | [`test_uploads.py`](tests/test_uploads.py) |
@@ -39,7 +39,7 @@ For production, set `SAFENOTES_ENV=production` and a random `SAFENOTES_SECRET_KE
 
 ```bash
 pip install -r requirements-dev.txt
-pytest                      # 79 security-focused tests
+pytest                      # 88 security-focused tests
 bandit -r safenotes         # static analysis: no issues, no suppressions
 pip-audit -r requirements.txt
 ```

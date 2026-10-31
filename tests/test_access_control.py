@@ -70,12 +70,21 @@ def test_sharing_with_unknown_user_or_self(alice):
 
 @pytest.mark.parametrize("target, expected", [
     ("/notes/1", "/notes/1"),
-    ("/?q=x", "/?q=x"),
+    ("/notes/42/edit", "/notes/42/edit"),
+    ("/account", "/account"),
+    ("/?q=x", "/"),  # query strings are dropped
+    ("/no-such-page", "/"),  # only real routes are allowed
+    ("/notes/abc", "/"),  # ...with values that pass the route's converters
+    ("/static/style.css", "/"),
     ("https://evil.example/phish", "/"),
     ("//evil.example/phish", "/"),
+    ("///evil.example", "/"),
     ("/\\evil.example", "/"),
+    ("/%5cevil.example", "/"),
+    ("/%2f%2fevil.example", "/"),
     ("javascript:alert(1)", "/"),
     (" https://evil.example", "/"),
+    ("/notes/1\r\nSet-Cookie: x=1", "/"),
 ])
 def test_login_redirect_stays_on_this_site(app, alice, target, expected):
     c = app.test_client()

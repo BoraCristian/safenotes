@@ -13,6 +13,7 @@ from datetime import datetime, timezone
 from urllib.parse import urlsplit
 
 from flask import Flask, abort, current_app, g, redirect, request, session, url_for
+from werkzeug.exceptions import HTTPException
 
 from .db import get_db
 
@@ -194,14 +195,25 @@ def clear_failed_logins(username: str) -> None:
 
 
 def safe_next(target: str | None, default: str) -> str:
-    """Only allow redirects to paths on this site (A01: open redirect)."""
+    """Where to go after login: only a real page of this app (A01: open redirect).
+
+    An allowlist rather than a blocklist: the path must match one of the app's own GET routes,
+    and the redirect is rebuilt with url_for() from that route. Nothing else from the user's
+    string survives, so no spelling trick (//host, /\\host, schemes, encodings) can point it
+    at another site. Query strings are dropped.
+    """
     if not target:
         return default
-    target = target.strip()
-    parts = urlsplit(target)
-    if parts.scheme or parts.netloc or not target.startswith("/") or target.startswith("//") or "\\" in target:
+    parts = urlsplit(target.strip())
+    if parts.scheme or parts.netloc or not parts.path.startswith("/"):
         return default
-    return target
+    try:
+        endpoint, values = current_app.url_map.bind("localhost").match(parts.path, method="GET")
+    except HTTPException:  # no such page, wrong method, or a redirect such as a missing slash
+        return default
+    if endpoint == "static":
+        return default
+    return url_for(endpoint, **values)
 
 
 CSP = ("default-src 'none'; style-src 'self'; img-src 'self'; form-action 'self'; "
